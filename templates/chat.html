@@ -63,16 +63,16 @@
                       <div class="p-3 rounded" style="background: #23272f; color: #fff; border-radius: 16px 16px 16px 4px; max-width: 80%;">
                         <b>BOOM Assistant</b><br>
                         Welcome to BOOM Assistant! I can...<br><br>
-                        • Upload Txt File<br>
-                        • Download Xlsx File<br><br>
+                        • Upload Payroll Files<br>
+                        • Generate Data Book<br><br>
                         What would you like to do today?
                       </div>
                     </div>
                   </div>
                   <div id="action-buttons" style="width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 0.5em; background: #23272f; border-radius: 16px; padding: 1em; justify-content: flex-end; margin-left: auto;">
                     <div style="display: flex; gap: 1em; justify-content: flex-end; align-items: center;">
-                      <button id="UPLOAD_TXT_FILE" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Folder</button>
-                      <button id="DOWNLOAD_XLSX_FILE" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Download Xlsx File</button>
+                      <button id="UPLOAD_XLSX_FILES" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Payroll Files</button>
+                      <button id="DOWNLOAD_DATA_BOOK" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Generate Data Book</button>
                       <div class="img_cont_msg" style="margin-left: 12px;">
                         <img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">
                       </div>
@@ -96,7 +96,7 @@
       }
 
       function attachButtonHandlers() {
-        $('#UPLOAD_TXT_FILE').off('click').on('click', function() {
+        $('#UPLOAD_XLSX_FILES').off('click').on('click', function() {
           chatCounter++;
           var currentChatId = 'call-status-' + chatCounter;
           
@@ -105,7 +105,7 @@
             '<div class="d-flex mb-3 justify-content-end">' +
               '<div class="p-3 rounded" style="background: #d9510e; color: #fff; border-radius: 16px 16px 4px 16px; max-width: 80%;">' +
                 '<span style="font-weight: bold;">You</span><br>' +
-                'Upload Folder' +
+                'Upload Payroll Files' +
               '</div>' +
               '<div class="img_cont_msg" style="margin-left: 12px;">' +
                 '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
@@ -119,7 +119,7 @@
               '<img src="https://media.licdn.com/dms/image/v2/D560BAQHK10HmqRh1rQ/company-logo_200/200/company-logo_200_200/0/1701815665068/wealthboom_logo?e=1755129600&v=beta&t=0RhPS_izHlCe2NRvKtO7mgT7LXo6T87muFlK-HR_noE" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
             '</div>' +
             '<div class="p-3 rounded" style="background: #23272f; color: #fff; border-radius: 16px 16px 16px 4px; max-width: 80%;">' +
-              '<b>BOOM Assistant</b><br>Select Folder containing Txt Files.' +
+              '<b>BOOM Assistant</b><br>Select Folder containing Payroll XLSX Files.' +
             '</div>' +
           '</div>');
           $('#chat-messages').append(botBubble);
@@ -130,7 +130,7 @@
               '<div class="form-group mb-0" style="flex: 1;">' +
                 '<input type="file" id="file" name="file" webkitdirectory directory multiple class="form-control-file" required style="color: #fff; font-size: 1.25rem; font-weight: bold;">' +
               '</div>' +
-              '<button type="submit" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 24px 24px; border-radius: 8px; color: white; font-weight: bold; font-size: 1.25rem;">Upload Folder</button>' +
+              '<button type="submit" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 24px 24px; border-radius: 8px; color: white; font-weight: bold; font-size: 1.25rem;">Upload Files</button>' +
               '<div class="img_cont_msg" style="margin-left: 12px;">' +
                 '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
               '</div>' +
@@ -184,24 +184,24 @@
             scrollToBottom();
 
             $.ajax({
-              url: '/UPLOAD_TXT_FILE',
+              url: '/UPLOAD_XLSX_FILES',
               type: 'POST',
               data: formData,
               processData: false,
               contentType: false,
               success: function (data) {
                 if (data.success) {
-                  $('#' + uploadStatusId).html('<span style="color: limegreen;">File upload successful!</span>');
+                  $('#' + uploadStatusId).html('<span style="color: limegreen;">Payroll files processed successfully!</span>');
                   $('#file').val('');
                 } else {
-                  $('#' + uploadStatusId).html('<span style="color: red;">File upload failure: ' + (data.message || 'Unknown error') + '</span>');
+                  $('#' + uploadStatusId).html('<span style="color: red;">File processing failure: ' + (data.message || 'Unknown error') + '</span>');
                 }
                 
                 // Restore default button layout
                 $('#action-buttons').html(
                   '<div style="display: flex; gap: 1em; justify-content: flex-end; align-items: center;">' +
-                    '<button id="UPLOAD_TXT_FILE" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Folder</button>' +
-                    '<button id="DOWNLOAD_XLSX_FILE" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Download Xlsx File</button>' +
+                    '<button id="UPLOAD_XLSX_FILES" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Payroll Files</button>' +
+                    '<button id="DOWNLOAD_DATA_BOOK" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Generate Data Book</button>' +
                     '<div class="img_cont_msg" style="margin-left: 12px;">' +
                       '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
                     '</div>' +
@@ -212,13 +212,13 @@
                 attachButtonHandlers();
               },
               error: function () {
-                $('#' + uploadStatusId).html('<span style="color: red;">File upload failure.</span>');
+                $('#' + uploadStatusId).html('<span style="color: red;">File processing failure.</span>');
                 
                 // Restore default button layout
                 $('#action-buttons').html(
-                  '<div style="display: 12px; justify-content: flex-end; align-items: center;">' +
-                    '<button id="UPLOAD_TXT_FILE" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Folder</button>' +
-                    '<button id="DOWNLOAD_XLSX_FILE" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Download Xlsx File</button>' +
+                  '<div style="display: flex; gap: 1em; justify-content: flex-end; align-items: center;">' +
+                    '<button id="UPLOAD_XLSX_FILES" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Payroll Files</button>' +
+                    '<button id="DOWNLOAD_DATA_BOOK" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Generate Data Book</button>' +
                     '<div class="img_cont_msg" style="margin-left: 12px;">' +
                       '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
                     '</div>' +
@@ -239,7 +239,7 @@
           });
         });
 
-        $('#DOWNLOAD_XLSX_FILE').off('click').on('click', function() {
+        $('#DOWNLOAD_DATA_BOOK').off('click').on('click', function() {
           chatCounter++;
           var currentChatId = 'call-status-' + chatCounter;
           
@@ -248,7 +248,7 @@
             '<div class="d-flex mb-3 justify-content-end">' +
               '<div class="p-3 rounded" style="background: #0ce308; color: #fff; border-radius: 16px 16px 4px 16px; max-width: 80%;">' +
                 '<span style="font-weight: bold;">You</span><br>' +
-                'Download Xlsx File' +
+                'Generate Data Book' +
               '</div>' +
               '<div class="img_cont_msg" style="margin-left: 12px;">' +
                 '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
@@ -262,7 +262,7 @@
               '<img src="https://media.licdn.com/dms/image/v2/D560BAQHK10HmqRh1rQ/company-logo_200_200/company-logo_200_200/0/1701815665068/wealthboom_logo?e=1755129600&v=beta&t=0RhPS_izHlCe2NRvKtO7mgT7LXo6T87muFlK-HR_noE" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
             '</div>' +
             '<div class="p-3 rounded" style="background: #23272f; color: #fff; border-radius: 16px 16px 16px 4px; max-width: 80%;">' +
-              '<b>BOOM Assistant</b><br>Select download directory for your Excel files.' +
+              '<b>BOOM Assistant</b><br>Select download directory for your Data Book Excel file.' +
             '</div>' +
           '</div>');
           $('#chat-messages').append(botBubble);
@@ -273,7 +273,7 @@
               '<div class="form-group mb-0" style="flex: 1;">' +
                 '<input type="text" id="downloadDir" placeholder="Enter download path (e.g., ~/Desktop/MyFiles)" class="form-control" required style="color: #fff; font-size: 1.25rem; font-weight: bold; background: #333; border: 1px solid #555; border-radius: 8px; padding: 12px;">' +
               '</div>' +
-              '<button type="submit" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Download</button>' +
+              '<button type="submit" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Generate</button>' +
               '<div class="img_cont_msg" style="margin-left: 12px;">' +
                 '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
               '</div>' +
@@ -305,7 +305,7 @@
               '</div>'
             );
 
-            // Show bot "Downloading..." bubble with animated thinking dots
+            // Show bot "Generating..." bubble with animated thinking dots
             var downloadStatusId = 'download-status-' + chatCounter;
             var botBubble = $('<div class="d-flex mb-3">' +
               '<div class="img_cont_msg" style="margin-right: 12px;">' +
@@ -320,24 +320,24 @@
             // Scroll to bottom
             scrollToBottom();
 
-            // DOWNLOAD XLSX FILE with custom directory
+            // DOWNLOAD DATA BOOK with custom directory
             $.ajax({
-              url: '/DOWNLOAD_XLSX_FILE',
+              url: '/DOWNLOAD_DATA_BOOK',
               type: 'POST',
               data: JSON.stringify({download_dir: downloadDir}),
               contentType: 'application/json',
               success: function (data) {
                 if (data.success) {
-                  $('#' + downloadStatusId).html('<span style="color: limegreen;">Download successful! Files saved to: ' + downloadDir + '</span>');
+                  $('#' + downloadStatusId).html('<span style="color: limegreen;">Data Book generated successfully! File saved to: ' + downloadDir + '</span>');
                 } else {
-                  $('#' + downloadStatusId).html('<span style="color: red;">Download failed: ' + (data.message || 'Unknown error') + '</span>');
+                  $('#' + downloadStatusId).html('<span style="color: red;">Data Book generation failed: ' + (data.message || 'Unknown error') + '</span>');
                 }
                 
                 // Restore default button layout
                 $('#action-buttons').html(
                   '<div style="display: flex; gap: 1em; justify-content: flex-end; align-items: center;">' +
-                    '<button id="UPLOAD_TXT_FILE" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Folder</button>' +
-                    '<button id="DOWNLOAD_XLSX_FILE" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Download Xlsx File</button>' +
+                    '<button id="UPLOAD_XLSX_FILES" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Payroll Files</button>' +
+                    '<button id="DOWNLOAD_DATA_BOOK" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Generate Data Book</button>' +
                     '<div class="img_cont_msg" style="margin-left: 12px;">' +
                       '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
                     '</div>' +
@@ -348,13 +348,13 @@
                 attachButtonHandlers();
               },
               error: function () {
-                $('#' + downloadStatusId).html('<span style="color: red;">Download error occurred.</span>');
+                $('#' + downloadStatusId).html('<span style="color: red;">Data Book generation error occurred.</span>');
                 
                 // Restore default button layout
                 $('#action-buttons').html(
                   '<div style="display: flex; gap: 1em; justify-content: flex-end; align-items: center;">' +
-                    '<button id="UPLOAD_TXT_FILE" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Folder</button>' +
-                    '<button id="DOWNLOAD_XLSX_FILE" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Download Xlsx File</button>' +
+                    '<button id="UPLOAD_XLSX_FILES" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Payroll Files</button>' +
+                    '<button id="DOWNLOAD_DATA_BOOK" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Generate Data Book</button>' +
                     '<div class="img_cont_msg" style="margin-left: 12px;">' +
                       '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
                     '</div>' +
@@ -372,7 +372,7 @@
       $(document).ready(function () {
         // Scroll to bottom on page load
         scrollToBottom();
-        $('#UPLOAD_TXT_FILE').off('click').on('click', function() {
+        $('#UPLOAD_XLSX_FILES').off('click').on('click', function() {
           chatCounter++;
           var currentChatId = 'call-status-' + chatCounter;
           
@@ -381,7 +381,7 @@
             '<div class="d-flex mb-3 justify-content-end">' +
               '<div class="p-3 rounded" style="background: #d9510e; color: #fff; border-radius: 16px 16px 4px 16px; max-width: 80%;">' +
                 '<span style="font-weight: bold;">You</span><br>' +
-                'Upload Folder' +
+                'Upload Payroll Files' +
               '</div>' +
               '<div class="img_cont_msg" style="margin-left: 12px;">' +
                 '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
@@ -395,7 +395,7 @@
               '<img src="https://media.licdn.com/dms/image/v2/D560BAQHK10HmqRh1rQ/company-logo_200/200/company-logo_200_200/0/1701815665068/wealthboom_logo?e=1755129600&v=beta&t=0RhPS_izHlCe2NRvKtO7mgT7LXo6T87muFlK-HR_noE" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
             '</div>' +
             '<div class="p-3 rounded" style="background: #23272f; color: #fff; border-radius: 16px 16px 16px 4px; max-width: 80%;">' +
-              '<b>BOOM Assistant</b><br>Select Folder containing Txt Files.' +
+              '<b>BOOM Assistant</b><br>Select Folder containing Payroll XLSX Files.' +
             '</div>' +
           '</div>');
           $('#chat-messages').append(botBubble);
@@ -406,7 +406,7 @@
               '<div class="form-group mb-0" style="flex: 1;">' +
                 '<input type="file" id="file" name="file" webkitdirectory directory multiple class="form-control-file" required style="color: #fff; font-size: 1.25rem; font-weight: bold;">' +
               '</div>' +
-              '<button type="submit" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 24px 24px; border-radius: 8px; color: white; font-weight: bold; font-size: 1.25rem;">Upload Folder</button>' +
+              '<button type="submit" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 24px 24px; border-radius: 8px; color: white; font-weight: bold; font-size: 1.25rem;">Upload Files</button>' +
               '<div class="img_cont_msg" style="margin-left: 12px;">' +
                 '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
               '</div>' +
@@ -460,25 +460,27 @@
             scrollToBottom();
 
             $.ajax({
-              url: '/UPLOAD_TXT_FILE',
+              url: '/UPLOAD_XLSX_FILES',
               type: 'POST',
               data: formData,
               processData: false,
               contentType: false,
               success: function (data) {
                 if (data.success) {
-                  $('#' + uploadStatusId).html('<span style="color: limegreen;">File upload successful!</span>');
+                  $('#' + uploadStatusId).html('<span style="color: limegreen;">Payroll files processed successfully!</span>');
                   $('#file').val('');
                 } else {
-                  $('#' + uploadStatusId).html('<span style="color: red;">File upload failure: ' + (data.message || 'Unknown error') + '</span>');
+                  $('#' + uploadStatusId).html('<span style="color: red;">File processing failure: ' + (data.message || 'Unknown error') + '</span>');
                 }
                 
-                // Restore default 8-button layout
+                // Restore default button layout
                 $('#action-buttons').html(
                   '<div style="display: flex; gap: 1em; justify-content: flex-end; align-items: center;">' +
-                    '<button id="UPLOAD_TXT_FILE" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Folder</button>' +
-                    '<button id="DOWNLOAD_XLSX_FILE" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Download Xlsx File</button>' +
-                    '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+                    '<button id="UPLOAD_XLSX_FILES" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Payroll Files</button>' +
+                    '<button id="DOWNLOAD_DATA_BOOK" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Generate Data Book</button>' +
+                    '<div class="img_cont_msg" style="margin-left: 12px;">' +
+                      '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+                    '</div>' +
                   '</div>'
                 );
                 
@@ -486,14 +488,16 @@
                 attachButtonHandlers();
               },
               error: function () {
-                $('#' + uploadStatusId).html('<span style="color: red;">File upload failure.</span>');
+                $('#' + uploadStatusId).html('<span style="color: red;">File processing failure.</span>');
                 
-                // Restore default 8-button layout
+                // Restore default button layout
                 $('#action-buttons').html(
                   '<div style="display: flex; gap: 1em; justify-content: flex-end; align-items: center;">' +
-                    '<button id="UPLOAD_TXT_FILE" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Folder</button>' +
-                    '<button id="DOWNLOAD_XLSX_FILE" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Download Xlsx File</button>' +
-                    '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+                    '<button id="UPLOAD_XLSX_FILES" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Payroll Files</button>' +
+                    '<button id="DOWNLOAD_DATA_BOOK" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Generate Data Book</button>' +
+                    '<div class="img_cont_msg" style="margin-left: 12px;">' +
+                      '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+                    '</div>' +
                   '</div>'
                 );
                 
@@ -509,6 +513,7 @@
               }
             });
           });
+
         });
 
       });
