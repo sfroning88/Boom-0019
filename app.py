@@ -14,74 +14,68 @@ def home():
     # render base home template
     return render_template('chat.html')
 
-# upload the txt file
-@app.route('/UPLOAD_TXT_FILE', methods=['POST'])
-def UPLOAD_TXT_FILE():
+# upload the xlsx payroll files
+@app.route('/UPLOAD_XLSX_FILES', methods=['POST'])
+def UPLOAD_XLSX_FILES():
     files = request.files.getlist('file')
     if not files:
         return jsonify({'success': False, 'message': 'No files detected.'}), 400
 
     from support.extension import ALLOWED_EXTENSIONS, retrieve_extension
     
-    # Filter only txt files
-    txt_files = []
+    # Filter only xlsx files
+    xlsx_files = []
     for file in files:
         if retrieve_extension(file.filename) in ALLOWED_EXTENSIONS:
-            txt_files.append(file)
+            xlsx_files.append(file)
     
-    if not txt_files:
-        return jsonify({'success': False, 'message': 'No valid txt files found in folder.'}), 400
+    if not xlsx_files:
+        return jsonify({'success': False, 'message': 'No valid xlsx files found in folder.'}), 400
 
-    print(f"Processing {len(txt_files)} txt files from folder upload")
+    print(f"Processing {len(xlsx_files)} xlsx files from folder upload")
     
     # Process each file with progress bar
     from tqdm import tqdm
     processed_files = {}
     
-    for file in tqdm(txt_files, desc="Converting txt files"):
+    for file in tqdm(xlsx_files, desc="Processing payroll files"):
         try:
-            from functions.t2c import convert_t2c
-            converted_file = convert_t2c(file=file)
+            # Dummy function for now - will be implemented later
+            from functions.payroll import process_payroll_file
+            payroll_data = process_payroll_file(file=file)
 
-            if converted_file is None:
-                print(f"ERROR: File {file.filename} was not converted into csv successfully")
-                continue
-
-            from functions.c2x import convert_c2x
-            converted_file = convert_c2x(converted_file=converted_file)
-
-            if converted_file is None:
-                print(f"ERROR: File {file.filename} was not converted into xlsx successfully")
+            if payroll_data is None:
+                print(f"ERROR: File {file.filename} was not processed successfully")
                 continue
 
             from support.generate import generate_code
             code = generate_code(file.filename)
             
-            processed_files[code] = {'filename': file.filename, 'content': converted_file}
+            processed_files[code] = {'filename': file.filename, 'payroll_data': payroll_data}
             
         except Exception as e:
             print(f"ERROR: Failed to process file {file.filename}: {e}")
             continue
 
     if not processed_files:
-        return jsonify({'success': False, 'message': 'No files were successfully converted.'}), 400
+        return jsonify({'success': False, 'message': 'No files were successfully processed.'}), 400
 
     # Store all processed files in config
     import support.config
     support.config.files.update(processed_files)
 
-    return jsonify({'success': True, 'message': f'Successfully processed {len(processed_files)} files from folder.'}), 200
+    return jsonify({'success': True, 'message': f'Successfully processed {len(processed_files)} payroll files.'}), 200
 
-# download the xlsx file
-@app.route('/DOWNLOAD_XLSX_FILE', methods=['POST'])
-def DOWNLOAD_XLSX_FILE():
+# download the data book xlsx file
+@app.route('/DOWNLOAD_DATA_BOOK', methods=['POST'])
+def DOWNLOAD_DATA_BOOK():
     import support.config
     from tqdm import tqdm
     import os
     import json
     
     if not support.config.files:
-        return jsonify({'success': False, 'message': 'No files available for download.'}), 400
+        return jsonify({'success': False, 'message': 'No payroll data available for download.'}), 400
     
     # Get custom download directory from request
     try:
@@ -105,51 +99,30 @@ def DOWNLOAD_XLSX_FILE():
         except Exception as e:
             return jsonify({'success': False, 'message': f'Could not create directory {downloads_dir}: {str(e)}'}), 400
     
-    print(f"Starting download of {len(support.config.files)} files to {downloads_dir}...")
+    print(f"Starting data book generation and download to {downloads_dir}...")
     
-    # Download each file with progress bar
-    successful_downloads = 0
-    for code, file_info in tqdm(support.config.files.items(), desc="Downloading files"):
-        filename = file_info['filename']
-        content = file_info['content']
+    # Generate data book xlsx file
+    try:
+        from functions.payroll import generate_data_book
+        data_book_content = generate_data_book(support.config.files)
         
-        # Generate Excel filename
-        excel_filename = os.path.splitext(os.path.basename(filename))[0] + '.xlsx'
+        if data_book_content is None:
+            return jsonify({'success': False, 'message': 'Failed to generate data book.'}), 400
         
-        # For folder uploads, maintain the subfolder structure but avoid duplication
-        if '/' in filename:
-            # Extract the subfolder path (everything after the base folder)
-            path_parts = filename.split('/')
-            if len(path_parts) > 1:
-                # Skip the base folder name and join the rest
-                subfolder_path = '/'.join(path_parts[1:-1])  # Exclude base folder and filename
-                if subfolder_path:
-                    full_download_path = os.path.join(downloads_dir, subfolder_path)
-                    # Create subfolder if it doesn't exist
-                    if not os.path.exists(full_download_path):
-                        os.makedirs(full_download_path)
-                    file_path = os.path.join(full_download_path, excel_filename)
-                else:
-                    # No subfolder, save directly in base folder
-                    file_path = os.path.join(downloads_dir, excel_filename)
-            else:
-                # Fallback: save directly in base folder
-                file_path = os.path.join(downloads_dir, excel_filename)
-        else:
-            file_path = os.path.join(downloads_dir, excel_filename)
+        # Save data book to file
+        file_path = os.path.join(downloads_dir, 'payroll_data_book.xlsx')
         
-        try:
-            # Reset buffer position and write to file
-            content.seek(0)
-            with open(file_path, 'wb') as f:
-                f.write(content.read())
-            print(f"Downloaded: {excel_filename}")
-            successful_downloads += 1
-        except Exception as e:
-            print(f"ERROR: Could not download {excel_filename}: {e}")
-    
-    print(f"Download complete! Successfully downloaded {successful_downloads} out of {len(support.config.files)} files")
-    return jsonify({'success': True, 'message': f'Downloaded {successful_downloads} files to {downloads_dir}'}), 200
+        # Reset buffer position and write to file
+        data_book_content.seek(0)
+        with open(file_path, 'wb') as f:
+            f.write(data_book_content.read())
+        
+        print(f"Data book downloaded: payroll_data_book.xlsx")
+        return jsonify({'success': True, 'message': f'Data book downloaded to {downloads_dir}'}), 200
+        
+    except Exception as e:
+        print(f"ERROR: Could not generate/download data book: {e}")
+        return jsonify({'success': False, 'message': f'Failed to generate data book: {str(e)}'}), 400
     
 if __name__ == '__main__':
     if len(sys.argv) != 1:
