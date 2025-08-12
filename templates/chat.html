@@ -1,0 +1,559 @@
+<link
+  href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+  rel="stylesheet"
+  id="bootstrap-css"
+/>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>BOOM Assistant</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+      integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
+      integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU"
+      crossorigin="anonymous"
+    />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{ url_for('static', filename='style.css')}}"
+    />
+  </head>
+
+  <body>
+    <!-- Main chat container -->
+    <div id="chat-container" style="width: 95vw; height: 90vh; margin: 2vh auto; border-radius: 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.10); padding: 0; font-size: 1.25rem; display: flex; align-items: center; justify-content: center;">
+        <div class="container-fluid h-100" style="height: 100%; width: 100%;">
+          <div class="row justify-content-center h-100" style="height: 100%;">
+            <div class="col-12 chat" style="height: 100%;">
+              <div class="card" style="height: 100%; width: 100%; display: flex; flex-direction: column;">
+                <div class="card-header msg_head">
+                  <div class="d-flex bd-highlight">
+                    <div class="img_cont">
+                      <img
+                        src="https://media.licdn.com/dms/image/v2/D560BAQHK10HmqRh1rQ/company-logo_200_200/company-logo_200_200/0/1701815665068/wealthboom_logo?e=1755129600&v=beta&t=0RhPS_izHlCe2NRvKtO7mgT7LXo6T87muFlK-HR_noE"
+                        class="rounded-circle user_img"
+                        style="width: 60px; height: 60px; object-fit: cover;"
+                      />
+                      <span class="online_icon"></span>
+                    </div>
+                    <div class="user_info">
+                      <span>BOOM Assistant</span>
+                      <p>AI Reimagining SMB M&A</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-body msg_card_body d-flex flex-column align-items-center justify-content-end" style="height: 100%; padding-bottom: 0;">
+                  <div id="chat-messages" style="width: 95%; max-width: 95%; height: 60vh; margin-bottom: 2em; overflow-y: auto; background: transparent;">
+                    <!-- Initial bot message -->
+                    <div class="d-flex mb-3">
+                      <div class="img_cont_msg" style="margin-right: 12px;">
+                        <img src="https://media.licdn.com/dms/image/v2/D560BAQHK10HmqRh1rQ/company-logo_200_200/company-logo_200_200/0/1701815665068/wealthboom_logo?e=1755129600&v=beta&t=0RhPS_izHlCe2NRvKtO7mgT7LXo6T87muFlK-HR_noE" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">
+                      </div>
+                      <div class="p-3 rounded" style="background: #23272f; color: #fff; border-radius: 16px 16px 16px 4px; max-width: 80%;">
+                        <b>BOOM Assistant</b><br>
+                        Welcome to BOOM Assistant! I can...<br><br>
+                        • Upload Txt File<br>
+                        • Download Xlsx File<br><br>
+                        What would you like to do today?
+                      </div>
+                    </div>
+                  </div>
+                  <div id="action-buttons" style="width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 0.5em; background: #23272f; border-radius: 16px; padding: 1em; justify-content: flex-end; margin-left: auto;">
+                    <div style="display: flex; gap: 1em; justify-content: flex-end; align-items: center;">
+                      <button id="UPLOAD_TXT_FILE" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Folder</button>
+                      <button id="DOWNLOAD_XLSX_FILE" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Download Xlsx File</button>
+                      <div class="img_cont_msg" style="margin-left: 12px;">
+                        <img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <script>
+      var chatCounter = 0;
+      
+      function scrollToBottom() {
+        setTimeout(function() {
+          var chatContainer = $('#chat-messages').parent();
+          chatContainer.scrollTop(chatContainer[0].scrollHeight);
+        }, 100);
+      }
+
+      function attachButtonHandlers() {
+        $('#UPLOAD_TXT_FILE').off('click').on('click', function() {
+          chatCounter++;
+          var currentChatId = 'call-status-' + chatCounter;
+          
+          // Show user message bubble
+          $('#chat-messages').append(
+            '<div class="d-flex mb-3 justify-content-end">' +
+              '<div class="p-3 rounded" style="background: #d9510e; color: #fff; border-radius: 16px 16px 4px 16px; max-width: 80%;">' +
+                '<span style="font-weight: bold;">You</span><br>' +
+                'Upload Folder' +
+              '</div>' +
+              '<div class="img_cont_msg" style="margin-left: 12px;">' +
+                '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+              '</div>' +
+            '</div>'
+          );
+
+          // Show bot response asking for file upload
+          var botBubble = $('<div class="d-flex mb-3">' +
+            '<div class="img_cont_msg" style="margin-right: 12px;">' +
+              '<img src="https://media.licdn.com/dms/image/v2/D560BAQHK10HmqRh1rQ/company-logo_200/200/company-logo_200_200/0/1701815665068/wealthboom_logo?e=1755129600&v=beta&t=0RhPS_izHlCe2NRvKtO7mgT7LXo6T87muFlK-HR_noE" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+            '</div>' +
+            '<div class="p-3 rounded" style="background: #23272f; color: #fff; border-radius: 16px 16px 16px 4px; max-width: 80%;">' +
+              '<b>BOOM Assistant</b><br>Select Folder containing Txt Files.' +
+            '</div>' +
+          '</div>');
+          $('#chat-messages').append(botBubble);
+
+          // Replace action buttons with file upload form
+          $('#action-buttons').html(
+            '<form id="uploadForm" enctype="multipart/form-data" method="POST" action="/UPLOAD_FILE" style="width: 100%; max-width: 800px; display: flex; align-items: center; gap: 1em; background: #23272f; border-radius: 16px; padding: 1em; justify-content: flex-end; margin-left: auto;">' +
+              '<div class="form-group mb-0" style="flex: 1;">' +
+                '<input type="file" id="file" name="file" webkitdirectory directory multiple class="form-control-file" required style="color: #fff; font-size: 1.25rem; font-weight: bold;">' +
+              '</div>' +
+              '<button type="submit" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 24px 24px; border-radius: 8px; color: white; font-weight: bold; font-size: 1.25rem;">Upload Folder</button>' +
+              '<div class="img_cont_msg" style="margin-left: 12px;">' +
+                '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+              '</div>' +
+            '</form>'
+          );
+
+          // Scroll to bottom
+          scrollToBottom();
+
+          // Handle file upload form submission
+          $('#uploadForm').off('submit').on('submit', function (event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            var fileInput = $('#file')[0];
+            var files = fileInput.files;
+            var fileCount = files.length;
+            
+            if (fileCount === 0) return;
+            
+            // Get folder name from the first file path
+            var folderName = files[0].webkitRelativePath.split('/')[0];
+            
+            // Show user message bubble with folder name and file count
+            $('#chat-messages').append(
+              '<div class="d-flex mb-3 justify-content-end">' +
+                '<div class="p-3 rounded" style="background: #d9510e; color: #fff; border-radius: 16px 16px 4px 16px; display: flex; flex-direction: column; align-items: flex-end;">' +
+                  '<span style="font-weight: bold; margin-bottom: 2px;">You</span>' +
+                  '<span style="display: flex; align-items: center;">' +
+                    '<i class="fas fa-folder" style="margin-right: 6px;"></i>Folder: ' + folderName + ' (' + fileCount + ' files)' +
+                  '</span>' +
+                '</div>' +
+                '<div class="img_cont_msg" style="margin-left: 12px;">' +
+                  '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+                '</div>' +
+              '</div>'
+            );
+
+            // Show bot "Uploading..." bubble with animated thinking dots
+            var uploadStatusId = 'upload-status-' + chatCounter;
+            var botBubble = $('<div class="d-flex mb-3">' +
+              '<div class="img_cont_msg" style="margin-right: 12px;">' +
+                '<img src="https://media.licdn.com/dms/image/v2/D560BAQHK10HmqRh1rQ/company-logo_200_200/company-logo_200_200/0/1701815665068/wealthboom_logo?e=1755129600&v=beta&t=0RhPS_izHlCe2NRvKtO7mgT7LXo6T87muFlK-HR_noE" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+              '</div>' +
+              '<div class="p-3 rounded" style="background: #23272f; color: #fff; border-radius: 16px 16px 16px 4px; max-width: 80%;">' +
+                '<b>BOOM Assistant</b><br><span id="' + uploadStatusId + '"><span class="thinking-dots"></span></span>' +
+              '</div>' +
+            '</div>');
+            $('#chat-messages').append(botBubble);
+
+            // Scroll to bottom
+            scrollToBottom();
+
+            $.ajax({
+              url: '/UPLOAD_TXT_FILE',
+              type: 'POST',
+              data: formData,
+              processData: false,
+              contentType: false,
+              success: function (data) {
+                if (data.success) {
+                  $('#' + uploadStatusId).html('<span style="color: limegreen;">File upload successful!</span>');
+                  $('#file').val('');
+                } else {
+                  $('#' + uploadStatusId).html('<span style="color: red;">File upload failure: ' + (data.message || 'Unknown error') + '</span>');
+                }
+                
+                // Restore default button layout
+                $('#action-buttons').html(
+                  '<div style="display: flex; gap: 1em; justify-content: flex-end; align-items: center;">' +
+                    '<button id="UPLOAD_TXT_FILE" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Folder</button>' +
+                    '<button id="DOWNLOAD_XLSX_FILE" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Download Xlsx File</button>' +
+                    '<div class="img_cont_msg" style="margin-left: 12px;">' +
+                      '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+                    '</div>' +
+                  '</div>'
+                );
+                
+                // Re-attach event handlers for all buttons
+                attachButtonHandlers();
+              },
+              error: function () {
+                $('#' + uploadStatusId).html('<span style="color: red;">File upload failure.</span>');
+                
+                // Restore default button layout
+                $('#action-buttons').html(
+                  '<div style="display: 12px; justify-content: flex-end; align-items: center;">' +
+                    '<button id="UPLOAD_TXT_FILE" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Folder</button>' +
+                    '<button id="DOWNLOAD_XLSX_FILE" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Download Xlsx File</button>' +
+                    '<div class="img_cont_msg" style="margin-left: 12px;">' +
+                      '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+                    '</div>' +
+                  '</div>'
+                );
+                
+                // Re-attach event handlers for all buttons
+                attachButtonHandlers();
+              }
+            });
+
+            // Style file input text color
+            $('#file').on('change', function() {
+              if (this.files && this.files[0]) {
+                $(this).css('color', '#fff');
+              }
+            });
+          });
+        });
+
+        $('#DOWNLOAD_XLSX_FILE').off('click').on('click', function() {
+          chatCounter++;
+          var currentChatId = 'call-status-' + chatCounter;
+          
+          // Show user message bubble
+          $('#chat-messages').append(
+            '<div class="d-flex mb-3 justify-content-end">' +
+              '<div class="p-3 rounded" style="background: #0ce308; color: #fff; border-radius: 16px 16px 4px 16px; max-width: 80%;">' +
+                '<span style="font-weight: bold;">You</span><br>' +
+                'Download Xlsx File' +
+              '</div>' +
+              '<div class="img_cont_msg" style="margin-left: 12px;">' +
+                '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+              '</div>' +
+            '</div>'
+          );
+
+          // Show bot response asking for directory selection
+          var botBubble = $('<div class="d-flex mb-3">' +
+            '<div class="img_cont_msg" style="margin-right: 12px;">' +
+              '<img src="https://media.licdn.com/dms/image/v2/D560BAQHK10HmqRh1rQ/company-logo_200_200/company-logo_200_200/0/1701815665068/wealthboom_logo?e=1755129600&v=beta&t=0RhPS_izHlCe2NRvKtO7mgT7LXo6T87muFlK-HR_noE" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+            '</div>' +
+            '<div class="p-3 rounded" style="background: #23272f; color: #fff; border-radius: 16px 16px 16px 4px; max-width: 80%;">' +
+              '<b>BOOM Assistant</b><br>Select download directory for your Excel files.' +
+            '</div>' +
+          '</div>');
+          $('#chat-messages').append(botBubble);
+
+          // Replace action buttons with directory selection form
+          $('#action-buttons').html(
+            '<form id="downloadForm" style="width: 100%; max-width: 800px; display: flex; align-items: center; gap: 1em; background: #23272f; border-radius: 16px; padding: 1em; justify-content: flex-end; margin-left: auto;">' +
+              '<div class="form-group mb-0" style="flex: 1;">' +
+                '<input type="text" id="downloadDir" placeholder="Enter download path (e.g., ~/Desktop/MyFiles)" class="form-control" required style="color: #fff; font-size: 1.25rem; font-weight: bold; background: #333; border: 1px solid #555; border-radius: 8px; padding: 12px;">' +
+              '</div>' +
+              '<button type="submit" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Download</button>' +
+              '<div class="img_cont_msg" style="margin-left: 12px;">' +
+                '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+              '</div>' +
+            '</form>'
+          );
+
+          // Scroll to bottom
+          scrollToBottom();
+
+          // Handle download form submission
+          $('#downloadForm').off('submit').on('submit', function (event) {
+            event.preventDefault();
+            var downloadDir = $('#downloadDir').val().trim();
+            
+            if (!downloadDir) return;
+            
+            // Show user message bubble with selected directory
+            $('#chat-messages').append(
+              '<div class="d-flex mb-3 justify-content-end">' +
+                '<div class="p-3 rounded" style="background: #0ce308; color: #fff; border-radius: 16px 16px 4px 16px; display: flex; flex-direction: column; align-items: flex-end;">' +
+                  '<span style="font-weight: bold; margin-bottom: 2px;">You</span>' +
+                  '<span style="display: flex; align-items: center;">' +
+                    '<i class="fas fa-folder" style="margin-right: 6px;"></i>Download to: ' + downloadDir +
+                  '</span>' +
+                '</div>' +
+                '<div class="img_cont_msg" style="margin-left: 12px;">' +
+                  '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+                '</div>' +
+              '</div>'
+            );
+
+            // Show bot "Downloading..." bubble with animated thinking dots
+            var downloadStatusId = 'download-status-' + chatCounter;
+            var botBubble = $('<div class="d-flex mb-3">' +
+              '<div class="img_cont_msg" style="margin-right: 12px;">' +
+                '<img src="https://media.licdn.com/dms/image/v2/D560BAQHK10HmqRh1rQ/company-logo_200_200/company-logo_200_200/0/1701815665068/wealthboom_logo?e=1755129600&v=beta&t=0RhPS_izHlCe2NRvKtO7mgT7LXo6T87muFlK-HR_noE" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+              '</div>' +
+              '<div class="p-3 rounded" style="background: #23272f; color: #fff; border-radius: 16px 16px 16px 4px; max-width: 80%;">' +
+                '<b>BOOM Assistant</b><br><span id="' + downloadStatusId + '"><span class="thinking-dots"></span></span>' +
+              '</div>' +
+            '</div>');
+            $('#chat-messages').append(botBubble);
+
+            // Scroll to bottom
+            scrollToBottom();
+
+            // DOWNLOAD XLSX FILE with custom directory
+            $.ajax({
+              url: '/DOWNLOAD_XLSX_FILE',
+              type: 'POST',
+              data: JSON.stringify({download_dir: downloadDir}),
+              contentType: 'application/json',
+              success: function (data) {
+                if (data.success) {
+                  $('#' + downloadStatusId).html('<span style="color: limegreen;">Download successful! Files saved to: ' + downloadDir + '</span>');
+                } else {
+                  $('#' + downloadStatusId).html('<span style="color: red;">Download failed: ' + (data.message || 'Unknown error') + '</span>');
+                }
+                
+                // Restore default button layout
+                $('#action-buttons').html(
+                  '<div style="display: flex; gap: 1em; justify-content: flex-end; align-items: center;">' +
+                    '<button id="UPLOAD_TXT_FILE" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Folder</button>' +
+                    '<button id="DOWNLOAD_XLSX_FILE" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Download Xlsx File</button>' +
+                    '<div class="img_cont_msg" style="margin-left: 12px;">' +
+                      '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+                    '</div>' +
+                  '</div>'
+                );
+                
+                // Re-attach event handlers for all buttons
+                attachButtonHandlers();
+              },
+              error: function () {
+                $('#' + downloadStatusId).html('<span style="color: red;">Download error occurred.</span>');
+                
+                // Restore default button layout
+                $('#action-buttons').html(
+                  '<div style="display: flex; gap: 1em; justify-content: flex-end; align-items: center;">' +
+                    '<button id="UPLOAD_TXT_FILE" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Folder</button>' +
+                    '<button id="DOWNLOAD_XLSX_FILE" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Download Xlsx File</button>' +
+                    '<div class="img_cont_msg" style="margin-left: 12px;">' +
+                      '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+                    '</div>' +
+                  '</div>'
+                );
+                
+                // Re-attach event handlers for all buttons
+                attachButtonHandlers();
+              }
+            });
+          });
+        });
+      }
+
+      $(document).ready(function () {
+        // Scroll to bottom on page load
+        scrollToBottom();
+        $('#UPLOAD_TXT_FILE').off('click').on('click', function() {
+          chatCounter++;
+          var currentChatId = 'call-status-' + chatCounter;
+          
+          // Show user message bubble
+          $('#chat-messages').append(
+            '<div class="d-flex mb-3 justify-content-end">' +
+              '<div class="p-3 rounded" style="background: #d9510e; color: #fff; border-radius: 16px 16px 4px 16px; max-width: 80%;">' +
+                '<span style="font-weight: bold;">You</span><br>' +
+                'Upload Folder' +
+              '</div>' +
+              '<div class="img_cont_msg" style="margin-left: 12px;">' +
+                '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+              '</div>' +
+            '</div>'
+          );
+
+          // Show bot response asking for file upload
+          var botBubble = $('<div class="d-flex mb-3">' +
+            '<div class="img_cont_msg" style="margin-right: 12px;">' +
+              '<img src="https://media.licdn.com/dms/image/v2/D560BAQHK10HmqRh1rQ/company-logo_200/200/company-logo_200_200/0/1701815665068/wealthboom_logo?e=1755129600&v=beta&t=0RhPS_izHlCe2NRvKtO7mgT7LXo6T87muFlK-HR_noE" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+            '</div>' +
+            '<div class="p-3 rounded" style="background: #23272f; color: #fff; border-radius: 16px 16px 16px 4px; max-width: 80%;">' +
+              '<b>BOOM Assistant</b><br>Select Folder containing Txt Files.' +
+            '</div>' +
+          '</div>');
+          $('#chat-messages').append(botBubble);
+
+          // Replace action buttons with file upload form
+          $('#action-buttons').html(
+            '<form id="uploadForm" enctype="multipart/form-data" method="POST" action="/UPLOAD_FILE" style="width: 100%; max-width: 800px; display: flex; align-items: center; gap: 1em; background: #23272f; border-radius: 16px; padding: 1em; justify-content: flex-end; margin-left: auto;">' +
+              '<div class="form-group mb-0" style="flex: 1;">' +
+                '<input type="file" id="file" name="file" webkitdirectory directory multiple class="form-control-file" required style="color: #fff; font-size: 1.25rem; font-weight: bold;">' +
+              '</div>' +
+              '<button type="submit" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 24px 24px; border-radius: 8px; color: white; font-weight: bold; font-size: 1.25rem;">Upload Folder</button>' +
+              '<div class="img_cont_msg" style="margin-left: 12px;">' +
+                '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+              '</div>' +
+            '</form>'
+          );
+
+          // Scroll to bottom
+          scrollToBottom();
+
+          // Handle file upload form submission
+          $('#uploadForm').off('submit').on('submit', function (event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            var fileInput = $('#file')[0];
+            var files = fileInput.files;
+            var fileCount = files.length;
+            
+            if (fileCount === 0) return;
+            
+            // Get folder name from the first file path
+            var folderName = files[0].webkitRelativePath.split('/')[0];
+            
+            // Show user message bubble with folder name and file count
+            $('#chat-messages').append(
+              '<div class="d-flex mb-3 justify-content-end">' +
+                '<div class="p-3 rounded" style="background: #d9510e; color: #fff; border-radius: 16px 16px 4px 16px; display: flex; flex-direction: column; align-items: flex-end;">' +
+                  '<span style="font-weight: bold; margin-bottom: 2px;">You</span>' +
+                  '<span style="display: flex; align-items: center;">' +
+                    '<i class="fas fa-folder" style="margin-right: 6px;"></i>Folder: ' + folderName + ' (' + fileCount + ' files)' +
+                  '</span>' +
+                '</div>' +
+                '<div class="img_cont_msg" style="margin-left: 12px;">' +
+                  '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+                '</div>' +
+              '</div>'
+            );
+
+            // Show bot "Uploading..." bubble with animated thinking dots
+            var uploadStatusId = 'upload-status-' + chatCounter;
+            var botBubble = $('<div class="d-flex mb-3">' +
+              '<div class="img_cont_msg" style="margin-right: 12px;">' +
+                '<img src="https://media.licdn.com/dms/image/v2/D560BAQHK10HmqRh1rQ/company-logo_200_200/company-logo_200_200/0/1701815665068/wealthboom_logo?e=1755129600&v=beta&t=0RhPS_izHlCe2NRvKtO7mgT7LXo6T87muFlK-HR_noE" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+              '</div>' +
+              '<div class="p-3 rounded" style="background: #23272f; color: #fff; border-radius: 16px 16px 16px 4px; max-width: 80%;">' +
+                '<b>BOOM Assistant</b><br><span id="' + uploadStatusId + '"><span class="thinking-dots"></span></span>' +
+              '</div>' +
+            '</div>');
+            $('#chat-messages').append(botBubble);
+
+            // Scroll to bottom
+            scrollToBottom();
+
+            $.ajax({
+              url: '/UPLOAD_TXT_FILE',
+              type: 'POST',
+              data: formData,
+              processData: false,
+              contentType: false,
+              success: function (data) {
+                if (data.success) {
+                  $('#' + uploadStatusId).html('<span style="color: limegreen;">File upload successful!</span>');
+                  $('#file').val('');
+                } else {
+                  $('#' + uploadStatusId).html('<span style="color: red;">File upload failure: ' + (data.message || 'Unknown error') + '</span>');
+                }
+                
+                // Restore default 8-button layout
+                $('#action-buttons').html(
+                  '<div style="display: flex; gap: 1em; justify-content: flex-end; align-items: center;">' +
+                    '<button id="UPLOAD_TXT_FILE" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Folder</button>' +
+                    '<button id="DOWNLOAD_XLSX_FILE" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Download Xlsx File</button>' +
+                    '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+                  '</div>'
+                );
+                
+                // Re-attach event handlers for all buttons
+                attachButtonHandlers();
+              },
+              error: function () {
+                $('#' + uploadStatusId).html('<span style="color: red;">File upload failure.</span>');
+                
+                // Restore default 8-button layout
+                $('#action-buttons').html(
+                  '<div style="display: flex; gap: 1em; justify-content: flex-end; align-items: center;">' +
+                    '<button id="UPLOAD_TXT_FILE" class="btn btn-primary" style="margin: 0; background: #d9510e; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Upload Folder</button>' +
+                    '<button id="DOWNLOAD_XLSX_FILE" class="btn btn-primary" style="margin: 0; background: #0ce308; border: none; padding: 12px 24px; border-radius: 8px; color: white; font-weight: bold;">Download Xlsx File</button>' +
+                    '<img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg" style="width: 40px; height: 40px; object-fit: cover;">' +
+                  '</div>'
+                );
+                
+                // Re-attach event handlers for all buttons
+                attachButtonHandlers();
+              }
+            });
+
+            // Style file input text color
+            $('#file').on('change', function() {
+              if (this.files && this.files[0]) {
+                $(this).css('color', '#fff');
+              }
+            });
+          });
+        });
+
+      });
+    </script>
+    <style>
+      /* Right-align the action buttons to match user chat messages */
+      #action-buttons {
+        justify-content: flex-end !important;
+        margin-left: auto !important;
+      }
+      /* Make chat-messages scrollable with a visible scrollbar */
+      #chat-messages {
+        scrollbar-width: thin;
+        scrollbar-color: #888 #23272f;
+      }
+      #chat-messages::-webkit-scrollbar {
+        width: 8px;
+      }
+      #chat-messages::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+      }
+      #chat-messages::-webkit-scrollbar-track {
+        background: #23272f;
+      }
+
+      /* Animated thought bubbles */
+      .thinking-dots {
+        display: inline-block;
+        font-size: 20px;
+        letter-spacing: 2px;
+        animation: thinking 1.5s infinite;
+      }
+      
+      @keyframes thinking {
+        0%, 20% { content: "."; }
+        40% { content: ".."; }
+        60% { content: "..."; }
+        80%, 100% { content: "."; }
+      }
+      
+      .thinking-dots::after {
+        content: ".";
+        animation: thinking 1.5s infinite;
+      }
+    </style>
+  </body>
+</html>
