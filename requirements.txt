@@ -1,0 +1,5 @@
+flask
+ngrok
+pandas
+openpyxl
+tqdm
