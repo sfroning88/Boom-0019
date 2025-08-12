@@ -1,2 +1,3 @@
-# Global variables used for files
-global files
+# Global variables used for employee payroll data
+global employees
+global years
