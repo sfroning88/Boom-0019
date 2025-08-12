@@ -29,101 +29,68 @@ def UPLOAD_XLSX_FILES():
         if retrieve_extension(file.filename) in ALLOWED_EXTENSIONS:
             xlsx_files.append(file)
     
-    if not xlsx_files:
+    if len(xlsx_files) == 0:
         return jsonify({'success': False, 'message': 'No valid xlsx files found in folder.'}), 400
 
     print(f"Processing {len(xlsx_files)} xlsx files from folder upload")
     
     # Process each file with progress bar
     from tqdm import tqdm
-    processed_files = {}
     
     for file in tqdm(xlsx_files, desc="Processing payroll files"):
-        try:
-            # Dummy function for now - will be implemented later
-            from functions.payroll import process_payroll_file
-            payroll_data = process_payroll_file(file=file)
+        from functions.payroll import process_payroll_file
+        support.config.employees = process_payroll_file(employees=support.config.employees, file=file)
 
-            if payroll_data is None:
-                print(f"ERROR: File {file.filename} was not processed successfully")
-                continue
-
-            from support.generate import generate_code
-            code = generate_code(file.filename)
-            
-            processed_files[code] = {'filename': file.filename, 'payroll_data': payroll_data}
-            
-        except Exception as e:
-            print(f"ERROR: Failed to process file {file.filename}: {e}")
+        if support.config.employees is None:
+            print(f"ERROR: File {file.filename} was not processed successfully")
             continue
 
-    if not processed_files:
+    if len(support.config.employees.keys()) == 0:
         return jsonify({'success': False, 'message': 'No files were successfully processed.'}), 400
 
-    # Store all processed files in config
-    import support.config
-    support.config.files.update(processed_files)
-
-    return jsonify({'success': True, 'message': f'Successfully processed {len(processed_files)} payroll files.'}), 200
+    return jsonify({'success': True, 'message': f'Successfully processed {len(xlsx_files)} payroll files.'}), 200
 
 # download the data book xlsx file
 @app.route('/DOWNLOAD_DATA_BOOK', methods=['POST'])
 def DOWNLOAD_DATA_BOOK():
     import support.config
-    from tqdm import tqdm
     import os
-    import json
     
-    if not support.config.files:
+    if not support.config.employees:
         return jsonify({'success': False, 'message': 'No payroll data available for download.'}), 400
     
     # Get custom download directory from request
-    try:
-        data = request.get_json()
-        if data and 'download_dir' in data:
-            custom_dir = data['download_dir'].strip()
-            if custom_dir:
-                # Expand user path (e.g., ~/Desktop -> /Users/username/Desktop)
-                downloads_dir = os.path.expanduser(custom_dir)
-            else:
-                downloads_dir = os.path.expanduser("~/Downloads")
+    data = request.get_json()
+    if data and 'download_dir' in data:
+        custom_dir = data['download_dir'].strip()
+        if custom_dir:
+            # Expand user path (e.g., ~/Desktop -> /Users/username/Desktop)
+            downloads_dir = os.path.expanduser(custom_dir)
         else:
             downloads_dir = os.path.expanduser("~/Downloads")
-    except:
-        downloads_dir = os.path.expanduser("~/Downloads")
     
-    # Create downloads directory if it doesn't exist
     if not os.path.exists(downloads_dir):
-        try:
-            os.makedirs(downloads_dir)
-        except Exception as e:
-            return jsonify({'success': False, 'message': f'Could not create directory {downloads_dir}: {str(e)}'}), 400
-    
+        return jsonify({'success': False, 'message': 'Invalid directory path provided.'}), 400
+       
     print(f"Starting data book generation and download to {downloads_dir}...")
     
     # Generate data book xlsx file
-    try:
-        from functions.payroll import generate_data_book
-        data_book_content = generate_data_book(support.config.files)
+    from functions.databook import generate_data_book
+    data_book_content = generate_data_book(employees=support.config.employees, years=support.config.years)
         
-        if data_book_content is None:
-            return jsonify({'success': False, 'message': 'Failed to generate data book.'}), 400
+    if data_book_content is None:
+        return jsonify({'success': False, 'message': 'Failed to generate data book.'}), 400
         
-        # Save data book to file
-        file_path = os.path.join(downloads_dir, 'payroll_data_book.xlsx')
+    # Save data book to file
+    file_path = os.path.join(downloads_dir, 'payroll_data_book.xlsx')
         
-        # Reset buffer position and write to file
-        data_book_content.seek(0)
-        with open(file_path, 'wb') as f:
-            f.write(data_book_content.read())
+    # Write the BytesIO content to file
+    with open(file_path, 'wb') as f:
+        f.write(data_book_content.getvalue())
         
-        print(f"Data book downloaded: payroll_data_book.xlsx")
-        return jsonify({'success': True, 'message': f'Data book downloaded to {downloads_dir}'}), 200
+    print(f"Data book downloaded: payroll_data_book.xlsx")
+    return jsonify({'success': True, 'message': f'Data book downloaded to {downloads_dir}'}), 200
         
-    except Exception as e:
-        print(f"ERROR: Could not generate/download data book: {e}")
-        return jsonify({'success': False, 'message': f'Failed to generate data book: {str(e)}'}), 400
-    
 if __name__ == '__main__':
     if len(sys.argv) != 1:
         print("Usage: python3 app.py")
@@ -157,11 +124,14 @@ if __name__ == '__main__':
 
     print("##############################_APP_BEGIN_##############################")
 
-    # dictionary for uploaded files
+    # dictionary for employee payroll data
     import support.config
-    support.config.files = {}
-    print(f"CHECKPOINT: Files dictionary initialized: {'Yes' if support.config.files is not None else 'No'}")
+    support.config.employees = {}
+    support.config.years = []
 
+    print(f"CHECKPOINT: Employees dictionary initialized: {'Yes' if support.config.employees is not None else 'No'}")
+    print(f"CHECKPOINT: Years list initialized: {'Yes' if support.config.years is not None else 'No'}")
+    
     print(f"CHECKPOINT: Using static domain: https://guiding-needlessly-mallard.ngrok-free.app/oauth/callback")
     
     print("##############################_APP_END_##############################")
